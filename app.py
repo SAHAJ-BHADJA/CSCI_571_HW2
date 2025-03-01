@@ -10,10 +10,7 @@ ARTSY_TOKEN = None
 ARTSY_TOKEN_EXPIRATION = 0
 
 def get_artsy_token():
-    """
-    Fetch XAPP-Token from Artsy API.
-    - Reuses the token until it expires.
-    """
+
     global ARTSY_TOKEN, ARTSY_TOKEN_EXPIRATION
     if ARTSY_TOKEN and time.time() < ARTSY_TOKEN_EXPIRATION:
         return ARTSY_TOKEN
@@ -33,12 +30,10 @@ def get_artsy_token():
 
 @app.route('/')
 def home():
-    """Renders the frontend UI."""
     return render_template('index.html')
 
 @app.route('/search', methods=['GET'])
 def search_artists():
-    """Fetches artist search results via Flask backend (no direct API calls from frontend)."""
     query = request.args.get('query', '')
 
     if not query:
@@ -75,7 +70,6 @@ def search_artists():
 
 @app.route('/artist/<artist_id>', methods=['GET'])
 def get_artist_details(artist_id):
-    """Fetches artist details via Flask backend."""
     try:
         headers = {"X-Xapp-Token": get_artsy_token()}
         url = f"https://api.artsy.net/api/artists/{artist_id}"
