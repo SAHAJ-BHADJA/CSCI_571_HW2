@@ -1,0 +1,8 @@
+runtime: python39
+
+# If you have a custom entrypoint (e.g., "gunicorn main:app"), specify it:
+entrypoint: gunicorn main:app
+
+# If your main Flask file is named 'main.py' and the Flask instance is named 'app'
+# inside that file, your gunicorn command might look like this:
+# entrypoint: gunicorn -b :$PORT main:app
