@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Artist Search</title>
+    <style>
+      input[type="search"]::-webkit-search-cancel-button {
+        display: none;
+      }
+
+      /* ----- Basic Resets ----- */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        color: #333;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ----- Header & Footer ----- */
+      header {
+        width: 100%;
+        padding: 15px 20px;
+        background-color: #ececec;
+        border-bottom: 1px solid #ddd;
+      }
+      footer {
+        width: 100%;
+        padding: 13px;
+        background-color: #112432;
+        border-top: 1px solid #ddd;
+        text-align: center;
+        position: sticky;
+        bottom: 0;
+      }
+      header h1 {
+        font-size: 1.5rem;
+        font-weight: normal;
+        color: #000;
+      }
+      footer a {
+        text-decoration: none;
+        color: #fff;
+        font-weight: bold;
+        margin-left: 5px;
+      }
+      .footer-content {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: #fff;
+      }
+
+      /* ----- Main Container ----- */
+      main {
+        min-height: calc(100vh - 110px); /* Reserve space for header & footer */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 20px;
+        flex: 1;
+      }
+
+      /* ----- Search Container ----- */
+      .search-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 600px;
+      }
+
+      #artist-form {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        border: 2px solid #ccc;
+        border-radius: 30px;
+        padding: 5px 10px;
+        transition: border-color 0.2s ease;
+        margin-bottom: 20px;
+      }
+      /* Highlight the border orange when the input (or any child) is focused */
+      #artist-form:focus-within {
+        border-color: orange;
+      }
+
+      /* Icons */
+      button.icon-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        opacity: 0.5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 23px;
+        width: 23px;
+        margin-right: 5px;
+        transition: opacity 0.2s;
+      }
+      button.icon-btn:focus {
+        outline: none;
+      }
+      button.icon-btn:hover {
+        opacity: 1;
+      }
+      #search-icon {
+        background-image: url("/static/images/search_icon.png");
+        background-size: contain;
+        font-size: 1.1rem;
+      }
+      #clear-icon {
+        background-image: url("/static/images/clear_icon.png");
+        background-size: contain;
+        font-size: 1.2rem;
+      }
+
+      /* Text Input */
+      #artist-input {
+        flex: 1;
+        border: none;
+        font-size: 1rem;
+        padding: 5px 10px;
+      }
+      #artist-input:focus {
+        outline: none;
+      }
+
+      /* ----- Results List Container ----- */
+      #results-container {
+        max-width: 800px;
+        margin-top: 10px;
+        display: flex;
+        overflow-x: auto; /* horizontally scrollable */
+        gap: 10px;
+        padding-bottom: 10px;
+      }
+
+      /* ----- Individual Result Card ----- */
+      .result-card {
+        background-color: #205375; /* original blue background */
+        min-width: 180px;
+        flex-shrink: 0;
+        text-align: center;
+        padding: 15px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        width: 220px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .result-card:hover {
+        background-color: #112b3c; /* darker blue on hover */
+      }
+      /* When selected, stay darker blue */
+      .result-card.selected {
+        background-color: #112b3c;
+      }
+
+      /* Artist Image (circular with white border) */
+      .artist-image {
+        height: 200px;
+        width: 200px;
+        object-fit: cover;
+        border: 2px solid #fff; /* white circular border */
+        border-radius: 50%;
+        background-color: #fff;
+      }
+
+      /* Artist Name in Card */
+      .artist-name {
+        color: #fff;
+        font-weight: bold;
+        margin-top: 10px;
+      }
+
+      /* ----- No Results Found ----- */
+      #no-results {
+        display: none;
+        margin-top: 20px;
+        font-weight: bold;
+        text-align: center;
+        background-color: #c4c4c4;
+        color: #333;
+        padding: 15px;
+        border-radius: 20px;
+        font-size: 16px;
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      /* ----- Loading Indicator ----- */
+      #loading {
+        margin: 20px 0;
+        display: none; /* hidden by default */
+      }
+      #loading img {
+        width: 70px; /* or any size you want */
+        height: auto;
+      }
+
+      /* ----- Artist Details Section ----- */
+      #artist-details {
+        max-width: 100%;
+        margin: 20px auto;
+        text-align: center;
+        font-family: Arial, sans-serif;
+      }
+
+      #details-name {
+        font-size: 18px;
+      }
+
+      #details-dates {
+        font-size: 18px;
+        font-style: italic;
+        margin-bottom: 5px;
+      }
+
+      #details-nationality {
+        font-size: 18px;
+      }
+
+      #details-bio {
+        text-align: justify;
+        font-size: 16px;
+        max-width: 750px;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Artist Search</h1>
+    </header>
+
+    <main>
+      <div class="search-container">
+        <!-- The form so that Enter key triggers submission -->
+        <form id="artist-form">
+          <!-- Magnifying glass icon (left) -->
+          <button
+            id="search-icon"
+            class="icon-btn"
+            type="submit"
+            aria-label="Search"
+          ></button>
+
+          <!-- The input field -->
+          <input
+            id="artist-input"
+            type="search"
+            placeholder="Please enter an artist name."
+            required
+          />
+
+          <!-- Cross (x) icon to clear the input -->
+          <button
+            id="clear-icon"
+            class="icon-btn"
+            type="button"
+            aria-label="Clear text"
+          ></button>
+        </form>
+
+        <!-- "No results found" message -->
+        <div id="no-results">No results found.</div>
+
+        <!-- Search results (cards) -->
+        <div id="results-container"></div>
+
+        <!-- Loading indicator (hidden by default, shown during search & details fetch) -->
+        <div id="loading">
+          <img src="/static/images/loading.gif" alt="Loading..." />
+        </div>
+
+        <!-- Artist details panel -->
+        <div id="artist-details">
+          <p id="details-name"></p>
+          <p id="details-dates"></p>
+          <p id="details-nationality"></p>
+          <p id="details-bio"></p>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <div class="footer-content">
+        <!-- Example Artsy Logo (Replace with your local file or a valid URL) -->
+        <a href="https://www.artsy.net">Powered by</a>
+        <a href="https://www.artsy.net">
+          <img
+            src="/static/images/artsy_logo.svg"
+            alt="Artsy Logo"
+            style="height: 20px"
+            onerror="this.style.display='none'"
+          />
+        </a>
+        <a href="https://www.artsy.net">Artsy</a>
+      </div>
+    </footer>
+
+    <script>
+      const form = document.getElementById("artist-form");
+      const input = document.getElementById("artist-input");
+      const clearBtn = document.getElementById("clear-icon");
+      const loading = document.getElementById("loading");
+      const noResultsDiv = document.getElementById("no-results");
+      const resultsContainer = document.getElementById("results-container");
+      const detailsPanel = document.getElementById("artist-details");
+
+      const detailsName = document.getElementById("details-name");
+      const detailsDates = document.getElementById("details-dates");
+      const detailsNationality = document.getElementById("details-nationality");
+      const detailsBio = document.getElementById("details-bio");
+
+      let currentSelectedCard = null;
+
+      // Clear text when "x" is clicked
+      clearBtn.addEventListener("click", () => {
+        input.value = "";
+        input.focus();
+      });
+
+      // On form submit (Enter or magnifying glass click)
+      form.addEventListener("submit", (event) => {
+        // Let the browser handle required check first
+        if (!form.checkValidity()) {
+          // If invalid, browser will show "Please fill out this field."
+          return;
+        }
+        event.preventDefault(); // Prevent page reload
+
+        // Hide details panel if open
+        detailsPanel.style.display = "none";
+        // Clear any selected card highlight
+        if (currentSelectedCard) {
+          currentSelectedCard.classList.remove("selected");
+          currentSelectedCard = null;
+        }
+
+        // Show loading indicator
+        loading.style.display = "block";
+        noResultsDiv.style.display = "none";
+        // Clear old results
+        resultsContainer.innerHTML = "";
+
+        const searchTerm = input.value.trim();
+
+        // Fetch from your Flask backend's /search endpoint
+        // Using "query" param, since app.py uses request.args.get('query', '')
+        fetch("/search?query=" + encodeURIComponent(searchTerm))
+          .then((response) => response.json())
+          .then((data) => {
+            // Hide loading indicator (after receiving search results)
+            loading.style.display = "none";
+
+            if (!data || data.length === 0) {
+              // No results found
+              noResultsDiv.style.display = "block";
+              return;
+            }
+
+            // Build result cards
+            data.forEach((artist) => {
+              const card = document.createElement("div");
+              card.classList.add("result-card");
+              card.setAttribute("data-artist-id", artist.id);
+
+              const img = document.createElement("img");
+              img.classList.add("artist-image");
+
+              // Check if the artist's thumbnail exists and is not a placeholder or broken
+              if (
+                artist.thumbnail &&
+                !artist.thumbnail.includes("/assets/shared/missing_image.png")
+              ) {
+                img.src = artist.thumbnail;
+                img.onerror = () => {
+                  img.src = "/static/images/artsy_logo.svg"; // Fallback if image fails to load
+                };
+              } else {
+                img.src = "/static/images/artsy_logo.svg"; // Fallback image
+              }
+
+              card.appendChild(img);
+
+              // Artist name
+              const nameDiv = document.createElement("div");
+              nameDiv.classList.add("artist-name");
+              nameDiv.textContent = artist.name || "Unknown Artist";
+              card.appendChild(nameDiv);
+
+              // Clicking a card => fetch details
+              card.addEventListener("click", () => {
+                // Hide old details
+                detailsPanel.style.display = "none";
+                // Show loading
+                loading.style.display = "block";
+
+                // Update selected styling
+                if (currentSelectedCard) {
+                  currentSelectedCard.classList.remove("selected");
+                }
+                currentSelectedCard = card;
+                card.classList.add("selected");
+
+                // Fetch details from /artist/<artist_id>
+                fetch("/artist/" + encodeURIComponent(artist.id))
+                  .then((resp) => resp.json())
+                  .then((details) => {
+                    // Hide loading
+                    loading.style.display = "none";
+
+                    // Show details
+                    detailsPanel.style.display = "block";
+                    detailsName.textContent = details.name || "Unknown Artist";
+
+                    //  const birth = details.birthday || "";
+                    //  const death = details.deathday || "";
+                    //  detailsDates.textContent =
+                    //  birth && death ? `(${birth} - ${death})` : ""
+                    //  const detailsName = document.getElementById("details-name");
+                    const detailsDates =
+                      document.getElementById("details-dates");
+
+                    const name = details.name || "Unknown Artist";
+                    const birth = details.birthday || "";
+                    const death = details.deathday || "";
+                    const dates = birth && death ? `(${birth} - ${death})` : "";
+
+                    detailsName.textContent = `${name} ${dates}`;
+                    detailsDates.style.display = "none"; // Hide the separate paragraph element if not needed
+
+                    detailsNationality.textContent = details.nationality
+                      ? `${details.nationality}`
+                      : "";
+                    detailsBio.textContent = details.biography
+                      ? details.biography
+                      : "No biography available.";
+                  })
+                  .catch((err) => {
+                    console.error("Error fetching details:", err);
+                    loading.style.display = "none";
+                    detailsPanel.style.display = "block";
+                    detailsName.textContent = "Error loading details.";
+                    detailsDates.textContent = "";
+                    detailsNationality.textContent = "";
+                    detailsBio.textContent = "";
+                  });
+              });
+
+              resultsContainer.appendChild(card);
+            });
+          })
+          .catch((error) => {
+            console.error("Error fetching search results:", error);
+            loading.style.display = "none";
+            noResultsDiv.style.display = "block";
+          });
+      });
+    </script>
+  </body>
+</html>
+
+
