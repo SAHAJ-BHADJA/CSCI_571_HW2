@@ -8,7 +8,7 @@
         display: none;
       }
 
-      /* ----- Basic Resets ----- */
+      /* Basic Resets  */
       * {
         margin: 0;
         padding: 0;
@@ -21,7 +21,7 @@
         flex-direction: column;
       }
 
-      /* ----- Header & Footer ----- */
+      /* Header & Footer */
       header {
         width: 100%;
         padding: 15px 20px;
@@ -55,7 +55,7 @@
         color: #fff;
       }
 
-      /* ----- Main Container ----- */
+      /* Main Container */
       main {
         min-height: calc(100vh - 110px); /* Reserve space for header & footer */
         display: flex;
@@ -66,7 +66,7 @@
         flex: 1;
       }
 
-      /* ----- Search Container ----- */
+      /* Search Container */
       .search-container {
         display: flex;
         flex-direction: column;
@@ -86,7 +86,7 @@
         transition: border-color 0.2s ease;
         margin-bottom: 20px;
       }
-      /* Highlight the border orange when the input (or any child) is focused */
+
       #artist-form:focus-within {
         border-color: orange;
       }
@@ -133,19 +133,19 @@
         outline: none;
       }
 
-      /* ----- Results List Container ----- */
+      /* Results List Container */
       #results-container {
         max-width: 800px;
         margin-top: 10px;
         display: flex;
-        overflow-x: auto; /* horizontally scrollable */
+        overflow-x: auto; 
         gap: 10px;
         padding-bottom: 10px;
       }
 
-      /* ----- Individual Result Card ----- */
+      /* Individual Result Card */
       .result-card {
-        background-color: #205375; /* original blue background */
+        background-color: #205375; 
         min-width: 180px;
         flex-shrink: 0;
         text-align: center;
@@ -158,9 +158,9 @@
         align-items: center;
       }
       .result-card:hover {
-        background-color: #112b3c; /* darker blue on hover */
+        background-color: #112b3c; 
       }
-      /* When selected, stay darker blue */
+
       .result-card.selected {
         background-color: #112b3c;
       }
@@ -182,7 +182,7 @@
         margin-top: 10px;
       }
 
-      /* ----- No Results Found ----- */
+      /* No Results Found */
       #no-results {
         display: none;
         margin-top: 20px;
@@ -198,17 +198,17 @@
         margin-right: auto;
       }
 
-      /* ----- Loading Indicator ----- */
+      /* Loading Indicator */
       #loading {
         margin: 20px 0;
-        display: none; /* hidden by default */
+        display: none; 
       }
       #loading img {
-        width: 70px; /* or any size you want */
+        width: 70px; 
         height: auto;
       }
 
-      /* ----- Artist Details Section ----- */
+      /* Artist Details Section */
       #artist-details {
         max-width: 100%;
         margin: 20px auto;
@@ -245,7 +245,7 @@
 
     <main>
       <div class="search-container">
-        <!-- The form so that Enter key triggers submission -->
+
         <form id="artist-form">
           <!-- Magnifying glass icon (left) -->
           <button
@@ -263,7 +263,7 @@
             required
           />
 
-          <!-- Cross (x) icon to clear the input -->
+          <!-- Cross (x) -->
           <button
             id="clear-icon"
             class="icon-btn"
@@ -275,10 +275,10 @@
         <!-- "No results found" message -->
         <div id="no-results">No results found.</div>
 
-        <!-- Search results (cards) -->
+        <!-- Search results -->
         <div id="results-container"></div>
 
-        <!-- Loading indicator (hidden by default, shown during search & details fetch) -->
+        <!-- Loading indicator -->
         <div id="loading">
           <img src="/static/images/loading.gif" alt="Loading..." />
         </div>
@@ -295,7 +295,7 @@
 
     <footer>
       <div class="footer-content">
-        <!-- Example Artsy Logo (Replace with your local file or a valid URL) -->
+
         <a href="https://www.artsy.net">Powered by</a>
         <a href="https://www.artsy.net">
           <img
@@ -325,24 +325,22 @@
 
       let currentSelectedCard = null;
 
-      // Clear text when "x" is clicked
+
       clearBtn.addEventListener("click", () => {
         input.value = "";
         input.focus();
       });
 
-      // On form submit (Enter or magnifying glass click)
+      // On form submit 
       form.addEventListener("submit", (event) => {
         // Let the browser handle required check first
         if (!form.checkValidity()) {
-          // If invalid, browser will show "Please fill out this field."
           return;
         }
-        event.preventDefault(); // Prevent page reload
+        event.preventDefault();
 
         // Hide details panel if open
         detailsPanel.style.display = "none";
-        // Clear any selected card highlight
         if (currentSelectedCard) {
           currentSelectedCard.classList.remove("selected");
           currentSelectedCard = null;
@@ -357,7 +355,6 @@
         const searchTerm = input.value.trim();
 
         // Fetch from your Flask backend's /search endpoint
-        // Using "query" param, since app.py uses request.args.get('query', '')
         fetch("/search?query=" + encodeURIComponent(searchTerm))
           .then((response) => response.json())
           .then((data) => {
@@ -386,10 +383,10 @@
               ) {
                 img.src = artist.thumbnail;
                 img.onerror = () => {
-                  img.src = "/static/images/artsy_logo.svg"; // Fallback if image fails to load
+                  img.src = "/static/images/artsy_logo.svg"; 
                 };
               } else {
-                img.src = "/static/images/artsy_logo.svg"; // Fallback image
+                img.src = "/static/images/artsy_logo.svg"; 
               }
 
               card.appendChild(img);
@@ -425,11 +422,7 @@
                     detailsPanel.style.display = "block";
                     detailsName.textContent = details.name || "Unknown Artist";
 
-                    //  const birth = details.birthday || "";
-                    //  const death = details.deathday || "";
-                    //  detailsDates.textContent =
-                    //  birth && death ? `(${birth} - ${death})` : ""
-                    //  const detailsName = document.getElementById("details-name");
+                    
                     const detailsDates =
                       document.getElementById("details-dates");
 
@@ -439,7 +432,7 @@
                     const dates = birth && death ? `(${birth} - ${death})` : "";
 
                     detailsName.textContent = `${name} ${dates}`;
-                    detailsDates.style.display = "none"; // Hide the separate paragraph element if not needed
+                    detailsDates.style.display = "none"; 
 
                     detailsNationality.textContent = details.nationality
                       ? `${details.nationality}`
