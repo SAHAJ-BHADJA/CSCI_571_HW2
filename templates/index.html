@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <title>Artist Search</title>
     <style>
+
+      /* used gpt to remove the auto version of the buttons of cross available in chrome and edge */
       input[type="search"]::-webkit-search-cancel-button {
         display: none;
       }
@@ -160,7 +162,6 @@
       .result-card:hover {
         background-color: #112b3c; 
       }
-
       .result-card.selected {
         background-color: #112b3c;
       }
@@ -245,7 +246,6 @@
 
     <main>
       <div class="search-container">
-
         <form id="artist-form">
           <!-- Magnifying glass icon (left) -->
           <button
@@ -254,7 +254,6 @@
             type="submit"
             aria-label="Search"
           ></button>
-
           <!-- The input field -->
           <input
             id="artist-input"
@@ -262,7 +261,6 @@
             placeholder="Please enter an artist name."
             required
           />
-
           <!-- Cross (x) -->
           <button
             id="clear-icon"
@@ -295,7 +293,6 @@
 
     <footer>
       <div class="footer-content">
-
         <a href="https://www.artsy.net">Powered by</a>
         <a href="https://www.artsy.net">
           <img
@@ -325,7 +322,6 @@
 
       let currentSelectedCard = null;
 
-
       clearBtn.addEventListener("click", () => {
         input.value = "";
         input.focus();
@@ -339,18 +335,12 @@
         }
         event.preventDefault();
 
-        // Hide details panel if open
+        // Hide details panel if open but do not clear the existing results immediately
         detailsPanel.style.display = "none";
-        if (currentSelectedCard) {
-          currentSelectedCard.classList.remove("selected");
-          currentSelectedCard = null;
-        }
 
-        // Show loading indicator
+        // Show loading indicator while keeping the current result list visible
         loading.style.display = "block";
         noResultsDiv.style.display = "none";
-        // Clear old results
-        resultsContainer.innerHTML = "";
 
         const searchTerm = input.value.trim();
 
@@ -358,8 +348,15 @@
         fetch("/search?query=" + encodeURIComponent(searchTerm))
           .then((response) => response.json())
           .then((data) => {
-            // Hide loading indicator (after receiving search results)
+            // Hide loading indicator once the response arrives
             loading.style.display = "none";
+
+            // Now clear the old results and remove any selected card styling
+            resultsContainer.innerHTML = "";
+            if (currentSelectedCard) {
+              currentSelectedCard.classList.remove("selected");
+              currentSelectedCard = null;
+            }
 
             if (!data || data.length === 0) {
               // No results found
@@ -399,47 +396,40 @@
 
               // Clicking a card => fetch details
               card.addEventListener("click", () => {
-                // Hide old details
+                // Hide old details and show loading indicator
                 detailsPanel.style.display = "none";
-                // Show loading
                 loading.style.display = "block";
-
-                // Update selected styling
+            
+                // Update selected styling: remove from any previous card
                 if (currentSelectedCard) {
                   currentSelectedCard.classList.remove("selected");
                 }
                 currentSelectedCard = card;
                 card.classList.add("selected");
-
+            
                 // Fetch details from /artist/<artist_id>
                 fetch("/artist/" + encodeURIComponent(artist.id))
                   .then((resp) => resp.json())
                   .then((details) => {
-                    // Hide loading
+                    // Hide loading indicator
                     loading.style.display = "none";
-
-                    // Show details
+            
+                    // Show details panel
                     detailsPanel.style.display = "block";
-                    detailsName.textContent = details.name || "Unknown Artist";
-
-                    
-                    const detailsDates =
-                      document.getElementById("details-dates");
-
-                    const name = details.name || "Unknown Artist";
+            
+                    // Combine artist name and years into one line
                     const birth = details.birthday || "";
                     const death = details.deathday || "";
-                    const dates = birth && death ? `(${birth} - ${death})` : "";
-
-                    detailsName.textContent = `${name} ${dates}`;
-                    detailsDates.style.display = "none"; 
-
-                    detailsNationality.textContent = details.nationality
-                      ? `${details.nationality}`
-                      : "";
-                    detailsBio.textContent = details.biography
-                      ? details.biography
-                      : "No biography available.";
+                    const dates = (birth && death) ? ` (${birth} - ${death})` : "";
+                    detailsName.textContent = (details.name || "Unknown Artist") + dates;
+            
+                    // Clear the separate dates element since info is combined
+                    detailsDates.textContent = "";
+                    detailsDates.style.display = "none";
+            
+                    // Set nationality and biography
+                    detailsNationality.textContent = details.nationality ? details.nationality : "";
+                    detailsBio.textContent = details.biography ? details.biography : "No biography available.";
                   })
                   .catch((err) => {
                     console.error("Error fetching details:", err);
@@ -464,5 +454,3 @@
     </script>
   </body>
 </html>
-
-
